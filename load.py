@@ -8,7 +8,7 @@ def astra_dist_to_watcher(dist_file, allowed_status=(-1,5), remove_first=True):
     columns_dict['x'] = dist[:,0]
     columns_dict['y'] = dist[:,1]
     columns_dict['t'] = -dist[:,2]/c
-    columns_dict['p'] = -dist[:,5]
+    columns_dict['p'] = dist[:,5]
     columns_dict['xp'] = dist[:,3]/columns_dict['p']
     columns_dict['yp'] = dist[:,4]/columns_dict['p']
     columns_dict['clock'] = dist[:,6]*1e-9
@@ -50,6 +50,4 @@ def load_astra_zemit(emit_file):
             'zE_avr': data[:,6], # what is this?
             }
     return out
-
-
 
