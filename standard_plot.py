@@ -39,7 +39,12 @@ def plot(sim):
 
     sp_beta.legend()
 
-    for n_dist, (dist_file, s) in enumerate(zip(sim.dist_files, sim.dist_files_s)):
+    nsps = 9-sp_ctr+1
+    mask = np.zeros_like(sim.dist_files_s, bool)
+    mask[:nsps-1] = True
+    mask[-1] = True
+
+    for n_dist, (dist_file, s, do) in enumerate(zip(sim.dist_files, sim.dist_files_s, mask)):
         w = astra_dist_to_watcher(dist_file, allowed_status=(-1, 5))
         zz = w['clock']
         #zz_mean, zz_std = zz0.mean(), zz0.std()
@@ -54,17 +59,18 @@ def plot(sim):
         curr = np.concatenate(([0,],hist*factor))
         sp_current.step(curr_zz*1e12, curr, label='%.1f' % s)
 
-        sp = subplot(sp_ctr, grid=False, title='Dist at s=%.1f m, %i particles' % (s, zz.size), xlabel='$t$ (ps)', ylabel='$\Delta E$ (MeV)')
-        sp_ctr += 1
+        if do:
+            sp = subplot(sp_ctr, grid=False, title='Dist at s=%.1f m, %i particles' % (s, zz.size), xlabel='$t$ (ps)', ylabel='$\Delta E$ (MeV)')
+            sp_ctr += 1
 
 
-        hist2d, yedges, xedges = np.histogram2d(w['p'], w['clock'], bins=(100, 100))
-        x_axis = (xedges[1:]+xedges[:-1])/2
-        y_axis = (yedges[1:]+yedges[:-1])/2
-        x_factor = 1e12
-        y_factor = 1e-6
-        extent = [x_axis[0]*x_factor, x_axis[-1]*x_factor, y_axis[0]*y_factor, y_axis[-1]*y_factor]
-        sp.imshow(hist2d, aspect='auto', extent=extent, origin='lower', cmap=ms.plt.get_cmap('hot'))
+            hist2d, yedges, xedges = np.histogram2d(w['p']-w['p'].mean(), w['clock'], bins=(100, 100))
+            x_axis = (xedges[1:]+xedges[:-1])/2
+            y_axis = (yedges[1:]+yedges[:-1])/2
+            x_factor = 1e12
+            y_factor = 1e-6
+            extent = [x_axis[0]*x_factor, x_axis[-1]*x_factor, y_axis[0]*y_factor, y_axis[-1]*y_factor]
+            sp.imshow(hist2d, aspect='auto', extent=extent, origin='lower', cmap=ms.plt.get_cmap('hot'))
 
     sp_current.legend()
 
