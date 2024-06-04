@@ -8,7 +8,8 @@ def astra_dist_to_watcher(dist_file, allowed_status=(-1,5), remove_first=True):
     columns_dict['x'] = dist[:,0]
     columns_dict['y'] = dist[:,1]
     columns_dict['z'] = -dist[:,2]/c
-    columns_dict['p'] = dist[:,5] + dist[0,5]
+    columns_dict['p'] = dist[:,5]
+    columns_dict['p'][1:] += dist[0,5]
     pis0 = columns_dict['p'] == 0
     columns_dict['xp'] = columns_dict['p'].copy()
     columns_dict['yp'] = columns_dict['p'].copy()
