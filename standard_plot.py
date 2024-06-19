@@ -24,6 +24,9 @@ def plot(sim):
     sp_espread.plot(sim.emit_z['z'], sim.emit_z['E_rms']/1e3, label='$\sigma_E$', color='tab:orange')
     ms.comb_legend(sp_energy, sp_espread)
 
+    sp_emittance = subplot(sp_ctr, title='Emittance', xlabel='$s$ (m)', ylabel='$\epsilon$ (nm)')
+    sp_ctr += 1
+
     sp_beta = subplot(sp_ctr, title='Beta functions', xlabel='$s$ (m)', ylabel=r'$\beta$ (m)')
     sp_ctr += 1
 
@@ -36,10 +39,11 @@ def plot(sim):
             ]:
         emit = emit_dict['nemit']/(sim.emit_z['E']/m_e_eV)
         sp_beta.plot(emit_dict['z'], emit_dict['pos_rms']**2/emit, label=dim)
+        sp_emittance.plot(emit_dict['z'], emit_dict['nemit']*1e9)
 
     sp_beta.legend()
 
-    nsps = 9-sp_ctr+1
+    nsps = 10-sp_ctr
     mask = np.zeros_like(sim.dist_files_s, bool)
     mask[:nsps-1] = True
     mask[-1] = True
@@ -47,13 +51,6 @@ def plot(sim):
     for n_dist, (dist_file, s, do) in enumerate(zip(sim.dist_files, sim.dist_files_s, mask)):
         w = astra_dist_to_watcher(dist_file, allowed_status=(-1, 5))
         zz = w['clock']
-        #zz_mean, zz_std = zz0.mean(), zz0.std()
-        #min_z = zz_mean - n_sig_z*zz_std
-        #max_z = zz_mean + n_sig_z*zz_std
-        #mask = np.logical_and(zz0>min_z, zz0<max_z)
-        #print('Dist file %i, consider %i/%.0f percent of particles for plot' % (n_dist, mask.size, mask.sum()/mask.size*100))
-        #print(np.unique(w['status'], return_counts=True))
-        #zz = zz0[mask]
         hist, curr_zz = np.histogram(zz-zz.mean(), bins=100)
         factor = charge/(np.diff(curr_zz)[0]*np.sum(hist))
         curr = np.concatenate(([0,],hist*factor))
@@ -62,7 +59,6 @@ def plot(sim):
         if do:
             sp = subplot(sp_ctr, grid=False, title='Dist at s=%.1f m, %i particles' % (s, zz.size), xlabel='$t$ (ps)', ylabel='$\Delta E$ (MeV)')
             sp_ctr += 1
-
 
             hist2d, yedges, xedges = np.histogram2d(w['p']-w['p'].mean(), w['clock'], bins=(100, 100))
             x_axis = (xedges[1:]+xedges[:-1])/2
