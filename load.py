@@ -1,6 +1,8 @@
 import numpy as np
-from scipy.constants import c
+from scipy.constants import m_e, c, e
 from ElegantWrapper.watcher import Watcher2
+
+m_e_eV = m_e*c**2/e
 
 def astra_dist_to_watcher(dist_file, allowed_status=(-1,5), remove_first=True):
     dist = np.loadtxt(dist_file)
@@ -8,15 +10,16 @@ def astra_dist_to_watcher(dist_file, allowed_status=(-1,5), remove_first=True):
     columns_dict['x'] = dist[:,0]
     columns_dict['y'] = dist[:,1]
     columns_dict['z'] = -dist[:,2]/c
-    columns_dict['p'] = dist[:,5]
-    columns_dict['p'][1:] += dist[0,5]
-    pis0 = columns_dict['p'] == 0
+    momentum_z = dist[:,5]
+    momentum_z[1:] += dist[0,5]
+    columns_dict['p'] = momentum_z / m_e_eV
+    pis0 = momentum_z == 0
     columns_dict['xp'] = columns_dict['p'].copy()
     columns_dict['yp'] = columns_dict['p'].copy()
     columns_dict['xp'][pis0] = 0
-    columns_dict['xp'][~pis0] = dist[:,3][~pis0]/columns_dict['p'][~pis0]
+    columns_dict['xp'][~pis0] = dist[:,3][~pis0]/momentum_z[~pis0]
     columns_dict['yp'][pis0] = 0
-    columns_dict['yp'][~pis0] = dist[:,4][~pis0]/columns_dict['p'][~pis0]
+    columns_dict['yp'][~pis0] = dist[:,4][~pis0]/momentum_z[~pis0]
     columns_dict['t'] = columns_dict['clock'] = dist[:,6]*1e-9
     columns_dict['status'] = dist[:,9]
     if remove_first:

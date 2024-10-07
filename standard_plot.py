@@ -2,6 +2,7 @@ import numpy as np
 from scipy.constants import m_e, e, c
 
 from PassiveWFMeasurement import myplotstyle as ms
+from ElegantWrapper import watcher
 from .load import astra_dist_to_watcher
 
 m_e_eV = m_e*c**2/e
@@ -27,6 +28,9 @@ def plot(sim):
     sp_emittance = subplot(sp_ctr, title='Emittance', xlabel='$s$ (m)', ylabel='$\epsilon$ (nm)')
     sp_ctr += 1
 
+    sp_slice_emittance = subplot(sp_ctr, title='Final slice emittance', xlabel='$t$ (ps)', ylabel='$\epsilon_n$ (nm)')
+    sp_ctr += 1
+
     sp_beta = subplot(sp_ctr, title='Beta functions', xlabel='$s$ (m)', ylabel=r'$\beta$ (m)')
     sp_ctr += 1
 
@@ -45,7 +49,7 @@ def plot(sim):
 
     nsps = 10-sp_ctr
     mask = np.zeros_like(sim.dist_files_s, bool)
-    mask[:nsps-1] = True
+    mask[:nsps-2] = True
     mask[-1] = True
 
     for n_dist, (dist_file, s, do) in enumerate(zip(sim.dist_files, sim.dist_files_s, mask)):
@@ -68,5 +72,11 @@ def plot(sim):
             extent = [x_axis[0]*x_factor, x_axis[-1]*x_factor, y_axis[0]*y_factor, y_axis[-1]*y_factor]
             sp.imshow(hist2d, aspect='auto', extent=extent, origin='lower', cmap=ms.plt.get_cmap('hot'))
 
+    slices = watcher.SliceCollection(w.slice_beam(100, 't'), w)
+    tt = -slices.s_arr/c
+    for dim in ('X', 'Y'):
+        emit = slices.get_slice_func('get_emittance_from_beam', dim.lower(), {'normalized': True})
+        sp_slice_emittance.plot(tt*1e12, emit*1e9, label=dim)
+    sp_slice_emittance.legend()
     sp_current.legend()
 
