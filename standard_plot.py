@@ -30,6 +30,8 @@ def plot(sim):
 
     sp_slice_emittance = subplot(sp_ctr, title='Final slice emittance', xlabel='$t$ (ps)', ylabel='$\epsilon_n$ (nm)')
     sp_ctr += 1
+    sp_slice_optics = sp_slice_emittance.twinx()
+    sp_slice_optics.set_ylabel(r'$\beta$ (m)')
 
     sp_beta = subplot(sp_ctr, title='Beta functions', xlabel='$s$ (m)', ylabel=r'$\beta$ (m)')
     sp_ctr += 1
@@ -68,15 +70,19 @@ def plot(sim):
             x_axis = (xedges[1:]+xedges[:-1])/2
             y_axis = (yedges[1:]+yedges[:-1])/2
             x_factor = 1e12
-            y_factor = 1e-6
+            y_factor = 1e-6 * m_e_eV
             extent = [x_axis[0]*x_factor, x_axis[-1]*x_factor, y_axis[0]*y_factor, y_axis[-1]*y_factor]
             sp.imshow(hist2d, aspect='auto', extent=extent, origin='lower', cmap=ms.plt.get_cmap('hot'))
 
     slices = watcher.SliceCollection(w.slice_beam(100, 't'), w)
+    slices.intensity_cutoff(slices.n_total/500)
     tt = -slices.s_arr/c
-    for dim in ('X', 'Y'):
-        emit = slices.get_slice_func('get_emittance_from_beam', dim.lower(), {'normalized': True})
+    for dim in ('x', 'y'):
+        emit = slices.get_slice_func('get_emittance_from_beam', dim, {'normalized': True})
         sp_slice_emittance.plot(tt*1e12, emit*1e9, label=dim)
+        beta = slices.get_slice_func('get_beta_from_beam', dim)
+        sp_slice_optics.plot(tt*1e12, beta, ls='--')
+
     sp_slice_emittance.legend()
     sp_current.legend()
 
