@@ -25,16 +25,16 @@ def plot(sim):
     sp_espread.plot(sim.emit_z['z'], sim.emit_z['E_rms']/1e3, label='$\sigma_E$', color='tab:orange')
     ms.comb_legend(sp_energy, sp_espread)
 
-    sp_emittance = subplot(sp_ctr, title='Emittance', xlabel='$s$ (m)', ylabel='$\epsilon$ (nm)')
+    sp_emittance = subplot(sp_ctr, title='Proj emittance and optics', xlabel='$s$ (m)', ylabel='$\epsilon$ (nm)')
     sp_ctr += 1
+    sp_beta = sp_emittance.twinx()
+    sp_beta.set_ylabel(r'$\beta$ (m)')
 
     sp_slice_emittance = subplot(sp_ctr, title='Final slice emittance', xlabel='$t$ (ps)', ylabel='$\epsilon_n$ (nm)')
     sp_ctr += 1
     sp_slice_optics = sp_slice_emittance.twinx()
     sp_slice_optics.set_ylabel(r'$\beta$ (m)')
 
-    sp_beta = subplot(sp_ctr, title='Beta functions', xlabel='$s$ (m)', ylabel=r'$\beta$ (m)')
-    sp_ctr += 1
 
     sp_current = subplot(sp_ctr, title='Current profiles', xlabel='$t$ (ps)', ylabel='$I$ (A)')
     sp_ctr += 1
@@ -44,14 +44,12 @@ def plot(sim):
             ('Y', sim.emit_y),
             ]:
         emit = emit_dict['nemit']/(sim.emit_z['E']/m_e_eV)
-        sp_beta.plot(emit_dict['z'], emit_dict['pos_rms']**2/emit, label=dim)
+        sp_beta.plot(emit_dict['z'], emit_dict['pos_rms']**2/emit, ls='--')
         sp_emittance.plot(emit_dict['z'], emit_dict['nemit']*1e9)
-
-    sp_beta.legend()
 
     nsps = 10-sp_ctr
     mask = np.zeros_like(sim.dist_files_s, bool)
-    mask[:nsps-2] = True
+    mask[:nsps-1] = True
     mask[-1] = True
 
     for n_dist, (dist_file, s, do) in enumerate(zip(sim.dist_files, sim.dist_files_s, mask)):
