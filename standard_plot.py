@@ -35,6 +35,9 @@ def plot(sim):
     sp_slice_optics = sp_slice_emittance.twinx()
     sp_slice_optics.set_ylabel(r'$\beta$ (m)')
 
+    sp_slice_mismatch = subplot(sp_ctr, title='Final slice mismatch w.r.t. central', xlabel='$t$ (ps)', ylabel='$M$')
+    sp_ctr += 1
+
 
     sp_current = subplot(sp_ctr, title='Current profiles', xlabel='$t$ (ps)', ylabel='$I$ (A)')
     sp_ctr += 1
@@ -80,7 +83,12 @@ def plot(sim):
         sp_slice_emittance.plot(tt*1e12, emit*1e9, label=dim)
         beta = slices.get_slice_func('get_beta_from_beam', dim)
         sp_slice_optics.plot(tt*1e12, beta, ls='--')
+        alpha = slices.get_slice_func('get_alpha_from_beam', dim)
+        index_min = len(tt)//2
+        mm = slices.get_slice_func('get_mismatch', dim, beta[index_min], alpha[index_min])
+        sp_slice_mismatch.plot(tt*1e12, mm)
+    sp_slice_mismatch.axvline(tt[index_min]*1e12, color='black', ls='--')
 
     sp_slice_emittance.legend()
-    sp_current.legend()
+    sp_current.legend(title='$s$ (m)')
 
