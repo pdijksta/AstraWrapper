@@ -32,7 +32,10 @@ def astra_dist_to_watcher(dist_file, allowed_status=(-1,5), remove_first=True):
             mask = np.logical_or(mask, status==allowed)
         for key, val in columns_dict.items():
             columns_dict[key] = val[mask]
-    return Watcher2({}, columns_dict)
+    parameters_dict = {
+            'arrival_time': dist[0,6]*1e-9,
+            }
+    return Watcher2(parameters_dict, columns_dict)
 
 def load_astra_temit(emit_file):
     data = np.loadtxt(emit_file)

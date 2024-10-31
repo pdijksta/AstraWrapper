@@ -2,6 +2,7 @@ import numpy as np
 from scipy.constants import m_e, e, c
 
 from PassiveWFMeasurement import myplotstyle as ms
+from PassiveWFMeasurement import image_analysis
 from ElegantWrapper import watcher
 from .load import astra_dist_to_watcher
 
@@ -64,16 +65,21 @@ def plot(sim):
         sp_current.step(curr_zz*1e12, curr, label='%.1f' % s)
 
         if do:
-            sp = subplot(sp_ctr, grid=False, title='Dist at s=%.1f m, %i particles' % (s, zz.size), xlabel='$t$ (ps)', ylabel='$\Delta E$ (MeV)')
+            sp = subplot(sp_ctr, grid=False, title='Dist at s=%.1f m, %i particles' % (s, zz.size), xlabel='$t$ (ps)', ylabel='$\Delta E$ (keV)')
             sp_ctr += 1
 
-            hist2d, yedges, xedges = np.histogram2d(w['p']-w['p'].mean(), w['clock'], bins=(100, 100))
-            x_axis = (xedges[1:]+xedges[:-1])/2
-            y_axis = (yedges[1:]+yedges[:-1])/2
-            x_factor = 1e12
-            y_factor = 1e-6 * m_e_eV
-            extent = [x_axis[0]*x_factor, x_axis[-1]*x_factor, y_axis[0]*y_factor, y_axis[-1]*y_factor]
-            sp.imshow(hist2d, aspect='auto', extent=extent, origin='lower', cmap=ms.plt.get_cmap('hot'))
+            #hist2d, yedges, xedges = np.histogram2d(w['p']-w['p'].mean(), w['clock'], bins=(100, 100))
+            #x_axis = (xedges[1:]+xedges[:-1])/2
+            #y_axis = (yedges[1:]+yedges[:-1])/2
+            #x_factor = 1e12
+            #y_factor = 1e-6 * m_e_eV
+            #extent = [x_axis[0]*x_factor, x_axis[-1]*x_factor, y_axis[0]*y_factor, y_axis[-1]*y_factor]
+            #sp.imshow(hist2d, aspect='auto', extent=extent, origin='lower', cmap=ms.plt.get_cmap('hot'))
+            tt = w['clock']-w['clock'].mean()
+            pp = (w['p']-w['p'].mean())*m_e_eV
+            img = image_analysis.arr2D_to_img(tt, pp, (100, 100), charge=sim.charge, energy_eV=w['p'].mean()*m_e_eV, x_unit='s', y_unit='eV')
+            img = img.cut_voids(0.01, 0.01)
+            img.plot_img_and_proj(sp, plot_gauss=False, x_factor=1e12, y_factor=1e-3)
 
     slices = watcher.SliceCollection(w.slice_beam(100, 't'), w)
     slices.intensity_cutoff(slices.n_total/500)
